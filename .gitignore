@@ -1,0 +1,8 @@
+.DS_Store
+target/
+.mooncakes/
+.moonagent/
+node_modules/
+
+package-lock.json
+bun.lock

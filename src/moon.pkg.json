@@ -1,0 +1,47 @@
+{
+  "warn-list": "-6-9",
+  "import": [],
+  "link": {
+    "js": {
+      "exports": [
+        "createOne",
+        "createPos2",
+        "createPos3",
+        "createPos4"
+      ],
+      "format": "esm"
+    },
+    "wasm": {
+      "shared-memory": false,
+      "memory-limits": {
+        "min": 1024,
+        "max": 65536
+      },
+      "import-memory": {
+        "module": "env",
+        "name": "memory"
+      },
+      "export-memory-name": "memory",
+      "exports": [
+        "createOne",
+        "createPos2",
+        "createPos3",
+        "createPos4"
+      ]
+    },
+    "wasm-gc": {
+      "shared-memory": false,
+      "import-memory": {
+        "module": "env",
+        "name": "memory"
+      },
+      "export-memory-name": "memory",
+      "exports": [
+        "createOne",
+        "createPos2",
+        "createPos3",
+        "createPos4"
+      ]
+    }
+  }
+}

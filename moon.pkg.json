@@ -1,0 +1,11 @@
+{
+  "link": {
+    "js": {
+      "exports": ["createOne", "getSimpleFloat", "createDynamic"],
+      "format": "esm"
+    },
+    "wasm": {
+      "exports": ["createOne", "getSimpleFloat", "createDynamic"]
+    }
+  }
+}

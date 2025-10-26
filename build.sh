@@ -12,6 +12,8 @@ moon clean
 # 一次性构建所有目标
 echo "🔨 构建所有目标 (JS + WASM + WASM-GC)..."
 moon build --target all --release
+moon build --target wasm --output-wat
+moon build --target wasm-gc --output-wat
 
 echo ""
 echo "📦 构建完成！正在统计..."
@@ -52,7 +54,7 @@ if command -v wasm-opt &> /dev/null; then
   # 优化 WASM
 if [ -f "target/wasm/release/build/src/src.wasm" ]; then
   wasm-opt -O3 --enable-bulk-memory --enable-multivalue --enable-simd --enable-relaxed-simd \
-    --strip-debug --strip-dwarf --strip-producers --vacuum --dae \
+    --strip-debug --strip-dwarf --strip-producers --vacuum --dce --dae  \
     target/wasm/release/build/src/src.wasm \
     -o target/wasm/release/build/src/src.optimized.wasm
     WASM_OPT_SIZE=$(ls -lh target/wasm/release/build/src/src.optimized.wasm | awk '{print $5}')
@@ -63,7 +65,7 @@ if [ -f "target/wasm/release/build/src/src.wasm" ]; then
 if [ -f "target/wasm-gc/release/build/src/src.wasm" ]; then
   wasm-opt -O3 --enable-bulk-memory --enable-reference-types --enable-gc --enable-multivalue \
     --enable-simd --enable-relaxed-simd \
-    --strip-debug --strip-dwarf --strip-producers --vacuum --dae \
+    --strip-debug --strip-dwarf --strip-producers --vacuum --dce --dae \
     target/wasm-gc/release/build/src/src.wasm \
     -o target/wasm-gc/release/build/src/src.optimized.wasm
     WASM_GC_OPT_SIZE=$(ls -lh target/wasm-gc/release/build/src/src.optimized.wasm | awk '{print $5}')

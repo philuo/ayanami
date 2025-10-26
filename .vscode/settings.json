@@ -1,0 +1,14 @@
+{
+  "files.exclude": {
+    ".git": true,
+    ".DS_Store": true,
+    ".npmrc": true,
+    "yarn.lock": true,
+    "bun.lock": true,
+    ".editorconfig": true,
+    ".gitignore": true,
+    ".gitattributes": true,
+    ".mooncakes": true
+    // "**/*.config.{ts,js}": true
+  }
+}

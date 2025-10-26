@@ -1,17 +1,10 @@
 {
-  "warn-list": "-6-9",
+  "warn-list": "-3-6-7-9",
   "import": [],
   "link": {
-    "js": {
-      "exports": [
-        "createOne",
-        "createPos2",
-        "createPos3",
-        "createPos4"
-      ],
-      "format": "esm"
-    },
-    "wasm": {
+    "wasm-gc": {
+      "use-js-builtin-string": true,
+      "imported-string-constants": "_",
       "shared-memory": false,
       "memory-limits": {
         "min": 1024,
@@ -23,24 +16,10 @@
       },
       "export-memory-name": "memory",
       "exports": [
-        "createOne",
-        "createPos2",
-        "createPos3",
-        "createPos4"
-      ]
-    },
-    "wasm-gc": {
-      "shared-memory": false,
-      "import-memory": {
-        "module": "env",
-        "name": "memory"
-      },
-      "export-memory-name": "memory",
-      "exports": [
-        "createOne",
-        "createPos2",
-        "createPos3",
-        "createPos4"
+        "initialize",
+        "game_start",
+        "game_stop",
+        "game_loop"
       ]
     }
   }

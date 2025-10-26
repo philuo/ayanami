@@ -1,0 +1,8 @@
+{
+  "import": [
+    "angel/ayanami/math",
+    "angel/ayanami/entity",
+    "angel/ayanami/position",
+    "angel/ayanami/backend"
+  ]
+}

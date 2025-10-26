@@ -1,7 +1,9 @@
 {
   "name": "angel/ayanami",
   "version": "0.0.1",
+  "source": "src",
   "readme": "README.md",
+  "description": "A modern game engine for 2D games.",
   "repository": "https://github.com/philuo/ayanami",
   "keywords": [
     "game",
@@ -10,5 +12,5 @@
     "multiplayer",
     "networking"
   ],
-  "description": "A modern game engine for 2D games."
+  "preferred-target": "wasm-gc"
 }

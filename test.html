@@ -53,11 +53,13 @@
 
     exports.game_start();
     const view = new DataView(exports.memory.buffer);
-    view.setUint32(0, 3000000000, true)
+    // view.setUint32(0, 3000000000, true)
     console.log(
       'initialize',
-      exports.initialize(2000)
+      exports.initialize()
     );
+
+    view.setUint16(0, 100, true)
 
     console.log(exports.memory)
     // TEST: 1 seconds later stop the game

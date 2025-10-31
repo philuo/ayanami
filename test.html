@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ayanami 2D Engine</title>
+</head>
+
+<body>
+  <script type="module">
+    // const wasmUrl = './target/wasm-gc/release/build/ayanami.optimized.wasm';
+    const wasmUrl = './target/wasm/release/build/ayanami.optimized.wasm';
+    const memory = new WebAssembly.Memory({ initial: 1024, maximum: 65536, shared: true });
+
+    let is_running = false;
+    let loop_id = 0;
+
+    function game_loop(timestamp) {
+      if (!is_running) return;
+      exports.game_loop(timestamp);
+      loop_id = requestAnimationFrame(game_loop);
+    }
+
+    const importObject = {
+      env: {
+        memory,
+        log: console.log.bind(console),
+        get_realtime_delta: performance.now.bind(performance),
+        app_start: () => {
+          loop_id = requestAnimationFrame(game_loop);
+          is_running = true;
+        },
+        app_stop: (id) => {
+          cancelAnimationFrame(loop_id);
+          loop_id = 0;
+          is_running = false;
+        }
+      }
+    };
+
+    const useFeature = {
+      builtins: ["js-string"],
+      importedStringConstants: "_"
+    };
+
+    const { instance: { exports } } = await WebAssembly.instantiateStreaming(
+      fetch(wasmUrl),
+      importObject,
+      useFeature
+    );
+
+
+    exports.game_start();
+    const view = new DataView(exports.memory.buffer);
+    view.setUint32(0, 3000000000, true)
+    console.log(
+      'initialize',
+      exports.initialize(2000)
+    );
+
+    console.log(exports.memory)
+    // TEST: 1 seconds later stop the game
+    setTimeout(exports.game_stop, 1000);
+  </script>
+</body>
+
+</html>

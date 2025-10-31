@@ -1,11 +1,13 @@
 {
   "warn-list": "-3-6-7-9",
-  "import": [],
+  "import": [
+    "angel/ayanami/backend",
+    "angel/ayanami/inputs",
+    "angel/ayanami/math"
+  ],
   "link": {
-    "wasm-gc": {
-      "use-js-builtin-string": true,
-      "imported-string-constants": "_",
-      "shared-memory": false,
+    "wasm": {
+      "shared-memory": true,
       "memory-limits": {
         "min": 1024,
         "max": 65536
@@ -19,7 +21,37 @@
         "initialize",
         "game_start",
         "game_stop",
-        "game_loop"
+        "game_loop",
+        "on_key_down",
+        "on_key_up",
+        "on_mouse_move",
+        "on_mouse_down",
+        "on_mouse_up"
+      ]
+    },
+    "wasm-gc": {
+      "use-js-builtin-string": true,
+      "imported-string-constants": "_",
+      "shared-memory": true,
+      "memory-limits": {
+        "min": 1024,
+        "max": 65536
+      },
+      "import-memory": {
+        "module": "env",
+        "name": "memory"
+      },
+      "export-memory-name": "memory",
+      "exports": [
+        "initialize",
+        "game_start",
+        "game_stop",
+        "game_loop",
+        "on_key_down",
+        "on_key_up",
+        "on_mouse_move",
+        "on_mouse_down",
+        "on_mouse_up"
       ]
     }
   }

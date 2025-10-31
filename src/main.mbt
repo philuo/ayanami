@@ -1,152 +1,174 @@
 ///|
-pub struct Entity(UInt)
+pub fn memory_size() -> Int = "(func (result i32) (memory.size))"
 
 ///|
-/// 组件：2d置
-pub struct Position {
-  x : Float // 水平方向位置(像素)
-  y : Float // 垂直方向位置(像素)
-}
+pub fn memory_grow(delta : Int) -> Int =
+  #|(func (param $delta i32) (result i32) (memory.grow (local.get $delta)))
 
 ///|
-/// 组件：2d速度
-pub struct Velocity {
-  x : Float // 水平方向速度(像素/秒)
-  y : Float // 垂直方向速度(像素/秒)
-}
+pub fn memory_copy(dest : Int, source : Int, len : Int) =
+  #|(func (param $dest i32) (param $source i32) (param $len i32) (memory.copy (local.get $dest) (local.get $source) (local.get $len)))
 
 ///|
-/// 组件：2d加速度
-pub struct Acceleration {
-  x : Float // 水平方向加速度(像素/秒^2)
-  y : Float // 垂直方向加速度(像素/秒^2)
-}
+pub fn memory_fill(dest : Int, val : Int, len : Int) =
+  #|(func (param $dest i32) (param $val i32) (param $len i32) (memory.fill (local.get $dest) (local.get $val) (local.get $len)))
 
 ///|
-/// 组件：2d变换
-pub struct Transform {
-  rotation : Float // 旋转角度(-360-0-360)
-  scale_x : Float // 水平方向缩放
-  scale_y : Float // 垂直方向缩放
-}
+pub fn load32(pos : Int) -> Int =
+  #|(func (param $pos i32) (result i32) (i32.load (local.get $pos)))
 
 ///|
-/// 组件：2d纹理
-pub struct Sprite {
-  texture_id : UInt // 纹理ID
-  width : Float // 纹理宽度(px)
-  height : Float // 纹理高度(px)
-  layer : UInt16 // 纹理层级(0-65535)
-  opacity : Byte // 透明度(0-255)
-  visible : Bool // 是否可见
-  flipY : Bool // 是否翻转Y轴
-}
+pub fn load64(pos : Int) -> Int64 =
+  #|(func (param $pos i32) (result i64) (i64.load (local.get $pos)))
 
 ///|
-/// 组件：动画
-pub struct Animation {
-  frames : Array[UInt] // 序列帧(纹理ID列表)
-  frame_duration : Float // 每帧持续时间(秒)
-  current_frame : Int // 当前帧索引
-  elapsed_time : Float // 累计已播放时长
-  is_loop : Bool // 是否循环播放
-  is_playing : Bool // 是否正在播放
-}
+pub fn loadf32(pos : Int) -> Float =
+  #|(func (param $pos i32) (result f32) (f32.load (local.get $pos)))
 
 ///|
-/// 组件：矩形碰撞体
-pub struct BoxCollider {
-  width : Float // 宽度(px)
-  height : Float // 高度(px)
-  offset_x : Float // 相对于Position的偏移位置X
-  offset_y : Float // 相对于Position的偏移位置Y
-  is_trigger : Bool // 是否为触发器(不产生物理响应)
-}
+pub fn loadf64(pos : Int) -> Double =
+  #|(func (param $pos i32) (result f64) (f64.load (local.get $pos)))
 
 ///|
-/// 组件：圆形碰撞体
-pub struct CircleCollider {
-  radius : Float // 半径(px)
-  offset_x : Float // 相对于Position的偏移位置X
-  offset_y : Float // 相对于Position的偏移位置Y
-  is_trigger : Bool // 是否为触发器(不产生物理响应)
-}
+pub fn load8_s(pos : Int) -> Int =
+  #|(func (param $pos i32) (result i32) (i32.load8_s (local.get $pos)))
 
 ///|
-/// 组件：刚体物理
-pub struct Rigidbody {
-  mass : Float // 质量(kg)
-  gravity_scale : Float // 重力缩放系数
-  drag : Float // 阻力系数
-  angular_drag : Float // 角速度阻力
-  is_kinematic : Bool // 是否为静态刚体
-  is_fixed_rotation : Bool // 是否固定旋转
-}
+pub fn load8_u(pos : Int) -> Int =
+  #|(func (param $pos i32) (result i32) (i32.load8_u (local.get $pos)))
 
 ///|
-/// 组件：生命值
-pub struct Health {
-  current : Float // 当前生命值
-  max : Float // 最大生命值
-  invincible : Bool // 是否无敌
-  invincible_time : Float // 无敌时间(秒)
-}
+pub fn load16_s(pos : Int) -> Int =
+  #|(func (param $pos i32) (result i32) (i32.load16_s (local.get $pos)))
 
 ///|
-/// 组件：输入控制
-pub struct InputHandler {
-  move_speed : Float
-  jump_force : Float
-  controllable : Bool
-}
+pub fn load16_u(pos : Int) -> Int =
+  #|(func (param $pos i32) (result i32) (i32.load16_u (local.get $pos)))
 
 ///|
-pub struct App {
-  canvas_height : Double
-  canvas_width : Double
-  zoom : Double
-  image_smooth : Bool
-  fps : UInt
-  systems : Array[(System, Schedule, String)]
-  plugins : Array[Plugin]
-}
+pub fn load64_8u(pos : Int) -> Int64 =
+  #|(func (param $pos i32) (result i64) (i64.load8_u (local.get $pos)))
 
 ///|
-pub typealias (Double) -> Unit as System
+pub fn load32_u(pos : Int) -> UInt =
+  #|(func (param $pos i32) (result i32) (i32.load (local.get $pos)))
+///|
+// 存储 32 位整数（接受 Int，如需存储 UInt 可用 .reinterpret_as_int() 转换）
+pub fn store32(pos : Int, val : Int) =
+  #|(func (param $pos i32) (param $val i32) (i32.store (local.get $pos) (local.get $val)))
 
 ///|
-pub typealias (App) -> Unit as Plugin
+pub fn store64(pos : Int, val : Int64) =
+  #|(func (param $pos i32) (param $val i64) (i64.store (local.get $pos) (local.get $val)))
 
 ///|
-pub typealias () -> Unit as Event
+pub fn storef32(pos : Int, val : Float) =
+  #|(func (param $pos i32) (param $val f32) (f32.store (local.get $pos) (local.get $val)))
 
 ///|
-pub(all) enum Schedule {
-  Startup
-  Update
-  Render(Int) // priority
-}
+pub fn storef64(pos : Int, val : Double) =
+  #|(func (param $pos i32) (param $val f64) (f64.store (local.get $pos) (local.get $val)))
 
-let loop_id: Ref[UInt] = { val: 0 }
+///|
+pub fn store8(pos : Int, val : Int) =
+  #|(func (param $pos i32) (param $val i32) (i32.store8 (local.get $pos) (local.get $val)))
 
-pub fn console_log(msg: String) -> Unit = "env" "console_log"
-pub fn request_animation_frame(callback: System) -> UInt = "env" "requestAnimationFrame"
-pub fn cancel_animation_frame(id: UInt) -> Unit = "env" "cancelAnimationFrame"
+///|
+pub fn store16(pos : Int, val : Int) =
+  #|(func (param $pos i32) (param $val i32) (i32.store16 (local.get $pos) (local.get $val)))
 
-pub fn game_loop(timestamp: Double) -> Unit {
-  console_log(timestamp.to_string())
-  loop_id.val = request_animation_frame(game_loop)
-}
+///|
+pub fn game_loop(_dt : Double) -> Unit {
+  // // 处理输入系统
+  // @inputs.advanced_key_system(_dt)
+  // @inputs.advanced_mouse_system(_dt)
 
-pub fn game_start() -> Unit {
-  loop_id.val = request_animation_frame(game_loop)
-}
-
-pub fn game_stop() -> Unit {
-  cancel_animation_frame(loop_id.val)
-  loop_id.val = 0
-}
-
-pub fn initialize() -> Unit {
+  // 游戏逻辑...
+  // @backend.log_number(_dt)
   
+  // 测试：UInt 超过 Int 最大值的情况
+  // let big_uint: UInt = 3000000000U  // 超过 Int::max_value (2147483647)
+  
+  // 方式1：直接传 UInt 给 store32(Int) - 会报类型错误 ✗
+  // store32(2, big_uint)  // ❌ 编译错误！MoonBit 不允许
+  
+  // 方式2：使用 reinterpret_as_int 转换 ✓
+  // store32(0, big_uint.reinterpret_as_int())  // 位模式不变，不会截断
+  @backend.log_number(load32_u(0).to_double())
 }
+
+///|
+pub fn game_start() -> Unit {
+  @backend.app_start()
+}
+
+///|
+pub fn game_stop() -> Unit {
+  @backend.app_stop()
+}
+
+#valtype
+struct State {
+  count: UInt
+  name: UInt
+}
+
+// #valtype
+// enum State {
+//   Count(UInt)
+//   Name(UInt)
+// }
+
+///|
+pub fn initialize(a: UInt) -> FixedArray[State] {
+  FixedArray::make(100000_000, { count: a, name: 1 })
+}
+
+// // ========== 输入同步接口 ==========
+
+// ///|
+// /// 键盘按下事件
+// pub fn on_key_down(key_code : String) -> Unit {
+//   match @inputs.Code::from_string(key_code) {
+//     Some(code) => @inputs.pressed_keys.add(code)
+//     None => ()
+//   }
+// }
+
+// ///|
+// /// 键盘释放事件
+// pub fn on_key_up(key_code : String) -> Unit {
+//   match @inputs.Code::from_string(key_code) {
+//     Some(code) => @inputs.pressed_keys.remove(code)
+//     None => ()
+//   }
+// }
+
+// ///|
+// /// 鼠标移动事件
+// pub fn on_mouse_move(x : Double, y : Double, movement_x : Double, movement_y : Double) -> Unit {
+//   @inputs.mouse.pos = @math.Vec2(x, y)
+//   @inputs.mouse_movement.movement = @math.Vec2(movement_x, movement_y)
+// }
+
+// ///|
+// /// 鼠标按下事件
+// pub fn on_mouse_down(button : Int) -> Unit {
+//   match button {
+//     0 => @inputs.mouse.left = true
+//     1 => @inputs.mouse.middle = true
+//     2 => @inputs.mouse.right = true
+//     _ => ()
+//   }
+// }
+
+// ///|
+// /// 鼠标释放事件
+// pub fn on_mouse_up(button : Int) -> Unit {
+//   match button {
+//     0 => @inputs.mouse.left = false
+//     1 => @inputs.mouse.middle = false
+//     2 => @inputs.mouse.right = false
+//     _ => ()
+//   }
+// }

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script type="module">
+    const code = `
+      let t = 0;
+      let count = 0;
+      let total = 0;
+
+      self.onmessage = (event) => {
+        const now = performance.now();
+
+        if (!t) {
+          t = now;
+          return;
+        }
+
+        ++count;
+        total += now - t;
+        t = now;
+
+        if (count % 400 === 0) {
+          console.log('postMessage(ms)', total / count);
+        }
+      };
+    `.trim();
+
+    const code2 = `
+      let t = 0;
+      let count = 0;
+      let total = 0;
+      let buffer;
+
+      self.onmessage = (event) => {
+        const state = new Int32Array(event.data.buffer);
+
+        while (true) {
+          // 位置0处如果值为0则睡眠
+          Atomics.wait(state, 0, 0);
+          const now = performance.now();
+
+          ++count;
+          total += now - t;
+          t = now;
+
+          Atomics.store(state, 0, 0);
+
+          if (count % 400 === 0) {
+            console.log('Atomics(ms)', total / count);
+          }
+        }
+      };`.trim();
+
+    const postMessageWorkerUrl = URL.createObjectURL(new Blob([code], { type: 'application/javascript' }));
+    const atomicsWorkerUrl = URL.createObjectURL(new Blob([code2], { type: 'application/javascript' }));
+    const worker = new Worker(postMessageWorkerUrl);
+    const worker2 = new Worker(atomicsWorkerUrl);
+
+    const memory = new WebAssembly.Memory({ initial: 1, maximum: 1, shared: true });
+    const state = new Int32Array(memory.buffer);
+
+    function sabLoop() {
+      // 1️⃣ 标记新帧
+      Atomics.store(state, 0, 1);
+
+      // 2️⃣ 通知 worker 可以开始工作
+      Atomics.notify(state, 0, 1);
+
+      requestAnimationFrame(sabLoop);
+    }
+
+    // function loop() {
+    //   worker.postMessage(0);
+    //   requestAnimationFrame(loop);
+    // }
+
+    // setTimeout(() => {
+    //   loop();
+    // }, 1000);
+    worker2.postMessage(memory);
+    requestAnimationFrame(sabLoop);
+  </script>
+</body>
+</html>

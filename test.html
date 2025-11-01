@@ -9,8 +9,9 @@
 
 <body>
   <script type="module">
-    // const wasmUrl = './target/wasm-gc/release/build/ayanami.optimized.wasm';
-    const wasmUrl = './target/wasm/release/build/ayanami.optimized.wasm';
+    import { KeyboardBuffer } from './lib.js';
+    // // const wasmUrl = './target/wasm-gc/release/build/ayanami.optimized.wasm';
+    const wasmUrl = './target/wasm-gc/release/build/ayanami.optimized.wasm';
     const memory = new WebAssembly.Memory({ initial: 1024, maximum: 65536, shared: true });
 
     let is_running = false;
@@ -52,17 +53,25 @@
 
 
     exports.game_start();
-    const view = new DataView(exports.memory.buffer);
+    // const view = new DataView(exports.memory.buffer);
     // view.setUint32(0, 3000000000, true)
-    console.log(
-      'initialize',
-      exports.initialize()
-    );
+    // view.setUint16(4, 100, true)
 
-    view.setUint16(0, 100, true)
 
-    console.log(exports.memory)
+    const keyboard_buffer = new KeyboardBuffer(exports.memory.buffer);
+    // console.log(exports.memory)
     // TEST: 1 seconds later stop the game
+    const event = {
+      timestamp: performance.now(),
+      code: 100,
+      typ: 1
+    };
+
+    keyboard_buffer.push(event);
+    keyboard_buffer.each(v => {
+      console.log(v)
+    })
+    console.log(exports.memory.buffer)
     setTimeout(exports.game_stop, 1000);
   </script>
 </body>

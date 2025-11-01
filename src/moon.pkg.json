@@ -1,9 +1,7 @@
 {
   "warn-list": "-3-6-7-9",
   "import": [
-    "angel/ayanami/backend",
-    "angel/ayanami/inputs",
-    "angel/ayanami/math"
+    "angel/ayanami/backend"
   ],
   "link": {
     "wasm": {

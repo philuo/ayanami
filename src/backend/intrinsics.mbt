@@ -179,6 +179,16 @@ pub fn store_i32(pos : Int, val : Int, align~: Int = 4) -> Unit {
   }
 }
 
+///|
+/// 存储32位整数
+pub fn store_u32(pos : Int, val : Int, align~: Int = 4) -> Unit {
+  match align {
+    4 => store32_a4(pos, val)
+    2 => store32_a2(pos, val)
+    _ => store32_a1(pos, val)
+  }
+}
+
 
 fn store64_a1(pos : Int, val : Int64) =
   #|(func (param $pos i32) (param $val i64) (i64.store align=1 (local.get $pos) (local.get $val)))

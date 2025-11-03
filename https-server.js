@@ -95,7 +95,7 @@ if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
 
     // 启动 HTTP 备用服务器
     const httpServer = http.createServer(handleRequest);
-    httpServer.listen(HTTP_PORT, '127.0.0.1', () => {
+    httpServer.listen(HTTP_PORT, '0.0.0.0', () => {
         console.log('');
         console.log(`⚠️  HTTP 服务器运行在: http://127.0.0.1:${HTTP_PORT}/`);
         console.log('⚠️  注意: SharedArrayBuffer 需要 HTTPS 环境');

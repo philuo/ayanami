@@ -3,62 +3,126 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
+  
+  <!-- ========== 移动端视口配置 ========== -->
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover" />
+  
+  <!-- ========== 移动端适配 ========== -->
+  <!-- iOS Safari 全屏模式 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <!-- Android Chrome 主题颜色 -->
+  <meta name="theme-color" content="#000000" />
+  
+  <!-- 禁用电话号码识别 -->
+  <meta name="format-detection" content="telephone=no" />
+  
+  <!-- 禁用缩放和长按选择 -->
+  <meta name="msapplication-tap-highlight" content="no" />
+  
   <title>Ayanami 2D Engine</title>
+  
+  <!-- 调试工具 -->
+  <!-- <script src="https://cdn.jsdelivr.net/npm/vconsole@3.15.1/dist/vconsole.min.js" onload="new VConsole()"></script> -->
+  <script src="https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js" onload="eruda.init()"></script>
+  
+  <style>
+    /* ========== 移动端优化样式 ========== */
+    * {
+      /* 禁用触摸高亮 */
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      /* 禁用文本选择 */
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      /* 禁用下拉刷新和橡皮筋效果 */
+      overscroll-behavior: none;
+      /* 禁用默认触摸操作 */
+      touch-action: none;
+      /* 背景色 */
+      background: #000;
+    }
+    
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      /* 禁用触摸操作 */
+      touch-action: none;
+    }
+  </style>
 </head>
 
 <body>
+  <!-- 游戏画布 -->
+  <canvas id="game-canvas"></canvas>
+  
   <script type="module">
-    import { KeyboardBuffer } from './lib.js';
-    // // const wasmUrl = './target/wasm-gc/release/build/ayanami.optimized.wasm';
-    const wasmUrl = './target/wasm-gc/release/build/ayanami.optimized.wasm';
-    const memory = new WebAssembly.Memory({ initial: 1024, maximum: 65536, shared: true });
+    import { keyboard_buffer, exports, touchIdAllocator, activeTouches } from './lib.js';
 
-    let is_running = false;
-    let loop_id = 0;
-
-    function game_loop(timestamp) {
-      if (!is_running) return;
-      exports.game_loop(timestamp);
-      loop_id = requestAnimationFrame(game_loop);
+    // ========== Canvas 初始化 ==========
+    const canvas = document.getElementById('game-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    // 设置 Canvas 尺寸（考虑设备像素比）
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
+    
+    console.log('Canvas initialized:', canvas.width, 'x', canvas.height, `(dpr=${dpr})`);
+    
+    // ========== 触摸可视化 ==========
+    const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00'];
+    
+    // 使用 lib.js 的触摸管理器，添加渲染触发
+    canvas.addEventListener('touchstart', () => render());
+    canvas.addEventListener('touchmove', () => render());
+    canvas.addEventListener('touchend', () => render());
+    canvas.addEventListener('touchcancel', () => render());
+    
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // 绘制触摸点（使用 lib.js 管理的 activeTouches）
+      for (let [customId, touch] of activeTouches) {
+        const color = colors[customId % colors.length];
+        
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(touch.x, touch.y, 50, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = '24px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`ID: ${customId}`, touch.x, touch.y);
+        
+        // 显示浏览器原始 ID（调试用）
+        ctx.font = '14px monospace';
+        ctx.fillText(`(${touch.browserId})`, touch.x, touch.y + 25);
+      }
+      
+      // 显示状态信息
+      ctx.fillStyle = '#fff';
+      ctx.font = '16px monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Active: ${touchIdAllocator.getActiveCount()} / 5`, 10, 30);
+      ctx.fillText(`Free: [${touchIdAllocator.freeIds.join(',')}]`, 10, 55);
     }
 
-    const importObject = {
-      env: {
-        memory,
-        log: console.log.bind(console),
-        get_realtime_delta: performance.now.bind(performance),
-        app_start: () => {
-          loop_id = requestAnimationFrame(game_loop);
-          is_running = true;
-        },
-        app_stop: (id) => {
-          cancelAnimationFrame(loop_id);
-          loop_id = 0;
-          is_running = false;
-        }
-      }
-    };
-
-    const useFeature = {
-      builtins: ["js-string"],
-      importedStringConstants: "_"
-    };
-
-    const { instance: { exports } } = await WebAssembly.instantiateStreaming(
-      fetch(wasmUrl),
-      importObject,
-      useFeature
-    );
-
-
     exports.game_start();
-    // const view = new DataView(exports.memory.buffer);
-    // view.setUint32(0, 3000000000, true)
-    // view.setUint16(4, 100, true)
-
-
-    const keyboard_buffer = new KeyboardBuffer(exports.memory.buffer);
     // console.log(exports.memory)
     // TEST: 1 seconds later stop the game
     const event = {
@@ -67,12 +131,43 @@
       typ: 1
     };
 
-    keyboard_buffer.push(event);
+    keyboard_buffer.push(event.timestamp, event.code, event.typ);
+
     keyboard_buffer.each(v => {
       console.log(v)
     })
+
     console.log(exports.memory.buffer)
-    setTimeout(exports.game_stop, 1000);
+    // setTimeout(exports.game_stop, 3000);
+
+    /// 测试循环修改内存
+    const N = 100_0000;
+    performance.mark('loop-start');
+    for (let i = 0; i < N; ++i) {}
+    performance.mark('loop-end');
+    
+    const view = new DataView(exports.memory.buffer);
+    const dt = performance.now();
+    performance.mark('js-call-wasm-start');
+    for (let i = 0; i < N; ++i) {
+      // exports.initialize(dt);
+    }
+    performance.mark('js-call-wasm-end');
+    performance.mark('js-write-directly-start');
+    for (let i = 0; i < N; ++i) {
+      view.setFloat32(100, dt, true);
+    }
+    performance.mark('js-write-directly-end');
+
+    const base_dur = performance.measure('loop-duration', 'loop-start', 'loop-end').duration;
+    const wasm_dur = performance.measure('js-call-wasm-duration', 'js-call-wasm-start', 'js-call-wasm-end').duration;
+    const js_dur = performance.measure('js-write-directly-duration', 'js-write-directly-start', 'js-write-directly-end').duration;
+
+    console.log(
+      base_dur,
+      wasm_dur,
+      js_dur,
+    )
   </script>
 </body>
 

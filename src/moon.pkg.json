@@ -5,18 +5,18 @@
   ],
   "link": {
     "wasm": {
+      "heap-start-address": 4096,
       "shared-memory": true,
-      "memory-limits": {
-        "min": 1024,
-        "max": 65536
-      },
-      "import-memory": {
-        "module": "env",
-        "name": "memory"
-      },
+      // "memory-limits": {
+      //   "min": 256,
+      //   "max": 1024
+      // },
+      // "import-memory": {
+      //   "module": "env",
+      //   "name": "memory"
+      // },
       "export-memory-name": "memory",
       "exports": [
-        "initialize",
         "game_start",
         "game_stop",
         "game_loop",
@@ -33,7 +33,7 @@
       "shared-memory": true,
       "memory-limits": {
         "min": 1024,
-        "max": 65536
+        "max": 1024
       },
       "import-memory": {
         "module": "env",
@@ -41,7 +41,6 @@
       },
       "export-memory-name": "memory",
       "exports": [
-        "initialize",
         "game_start",
         "game_stop",
         "game_loop",

@@ -25,13 +25,6 @@ echo ""
 echo "📊 文件大小对比:"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# if [ -f "target/js/release/build/src/src.js" ]; then
-#   JS_SIZE=$(ls -lh target/js/release/build/src/src.js | awk '{print $5}')
-#   echo "✓ JS:        $JS_SIZE  (target/js/release/build/src/src.js)"
-# else
-#   echo "✗ JS:        未生成"
-# fi
-
 if [ -f "target/wasm/release/build/ayanami.wasm" ]; then
   WASM_SIZE=$(ls -lh target/wasm/release/build/ayanami.wasm | awk '{print $5}')
   echo "✓ WASM:      $WASM_SIZE  (target/wasm/release/build/ayanami.wasm)"

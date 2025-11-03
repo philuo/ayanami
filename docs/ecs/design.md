@@ -298,14 +298,14 @@ interface HeaderInfo {
       bitmask: [u64, u64];
     };
     /**
-     * 当前逻辑帧鼠标移动label信息, 占用 4 Bytes [28]
+     * 当前逻辑帧鼠标移动label信息, 占用 4 Bytes [28, 31]
      */
     mouse_move: {
       /** 当前帧鼠标移动事件触发次数, 范围0~4次 */
       size: u32;
     };
     /**
-     * 当前逻辑帧手指移动label信息, 占用 4 Bytes [31]
+     * 当前逻辑帧手指移动label信息, 占用 4 Bytes [32, 35]
      */
     touch_move: {
       /** 当前帧鼠标移动事件触发次数, 范围0~4次 */
@@ -313,7 +313,7 @@ interface HeaderInfo {
     };
 
     /**
-     * 当前逻辑帧Mouse环形队列label信息, 占用 8 Bytes [32, 39]
+     * 当前逻辑帧Mouse环形队列label信息, 占用 8 Bytes [36, 43]
      */
     mouse_buffer: {
       tail: u16;
@@ -337,12 +337,12 @@ interface HeaderInfo {
     touches: [{
       /** 触摸点唯一标识 */
       identifier: u32;
+      /** 触点半径 */
+      radius: f32
       /** 水平方向位置 */
       x: f32;
       /** 垂直方向位置 */
       y: f32;
-      /** 触点半径 */
-      radius: f32
     }; 4]
   }; 4]
 

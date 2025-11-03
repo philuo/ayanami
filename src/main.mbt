@@ -43,15 +43,6 @@ pub struct KeyboardState {
 } derive(Show)
 
 ///|
-fn KeyboardState::new(
-  timestamp : Float,
-  code : UInt,
-  typ : UInt,
-) -> KeyboardState {
-  { timestamp, code: code.to_uint16(), typ: typ.to_uint16() }
-}
-
-///|
 /// 获取队列指针(tail, head)
 pub fn KeyboardBuffer::get_ptr(_ : KeyboardBuffer) -> Ptr {
   let tail_head = load_u32(4)
@@ -101,7 +92,122 @@ pub fn KeyboardBuffer::get(_ : KeyboardBuffer, index : Int) -> KeyboardState {
   let offset = index * 8 + 4096
   let timestamp = load_f32(offset)
   let code_typ = load_u32(offset + 4)
-  KeyboardState::new(timestamp, code_typ & 0xFFFF, code_typ >> 16)
+  KeyboardState::{
+    timestamp,
+    code: (code_typ & 0xFFFF).to_uint16(),
+    typ: (code_typ >> 16).to_uint16(),
+  }
+}
+
+///|
+/// 键盘输入事件环形缓冲区 - 基于固定内存布局
+/// | Addr          | Byte      | Name     | Type    | Description |
+/// |:--------------|:---------:|:--------:|:-------:|:------------|
+/// | 0x20~0x21     | 2         | tail     | UInt16  | 队列尾索引   |
+/// | 0x22~0x23     | 2         | head     | UInt16  | 队列头索引   |
+/// | 0x24~0x25     | 2         | size     | UInt16  | 队列长度（0～65535）|
+/// | 0x26~0x27     | 2         | capacity | UInt16  | 最大容量（65535）|
+/// | [4896, 5023]  | 8 × 64    | data[]   | struct  | KeyboardState |
+pub struct MouseBuffer(Unit)
+
+///|
+#valtype
+struct MouseState {
+  timestamp : Float
+  /// 按键bitmask集合：
+  /// - 左键: 1 << 0 = 1
+  /// - 右键: 1 << 1 = 2
+  /// - 中键: 1 << 2 = 4
+  /// - 前进: 1 << 3 = 8
+  /// - 后退: 1 << 4 = 16
+  buttons : UInt
+}
+
+///|
+pub fn MouseBuffer::get_ptr(_ : MouseBuffer) -> Ptr {
+  let tail_head = load_u32(36)
+  Ptr(tail_head >> 16, tail_head & 0xFFFF)
+}
+
+///|
+pub fn MouseBuffer::loop_ptr(_ : MouseBuffer) -> Ptr {
+  let head_size = load_u32(38, align=2)
+  Ptr(head_size & 0xFFFF, head_size >> 16)
+}
+
+///|
+pub fn MouseBuffer::head(_ : MouseBuffer) -> UInt {
+  load32_u16(38)
+}
+
+///|
+pub fn MouseBuffer::size(_ : MouseBuffer) -> UInt {
+  load32_u16(40)
+}
+
+///|
+pub fn MouseBuffer::capacity(_ : MouseBuffer) -> UInt {
+  load32_u16(42)
+}
+
+///|
+pub fn MouseBuffer::is_empty(self : Self) -> Bool {
+  self.size() == 0
+}
+
+///|
+#alias("_[_]")
+pub fn MouseBuffer::get(_ : Self, index : Int) -> MouseState {
+  let offset = index * 8 + 4896
+  let timestamp = load_f32(offset)
+  let buttons = load_u32(offset + 4)
+  MouseState::{ timestamp, buttons }
+}
+
+///|
+pub struct MouseMoveBuffer(Unit)
+
+///|
+#valtype
+struct MouseMoveState {
+  x : Float
+  y : Float
+}
+
+pub fn MouseMoveBuffer::size(_ : MouseMoveBuffer) -> UInt {
+  load_u32(28)
+}
+
+#alias("_[_]")
+pub fn MouseMoveBuffer::get(_ : Self, index : Int) -> MouseMoveState {
+  let offset = index * 8 + 4608
+  let x = load_f32(offset)
+  let y = load_f32(offset + 4)
+  MouseMoveState::{ x, y }
+}
+
+pub struct TouchMoveBuffer(Unit)
+
+#valtype
+struct Touch {
+  identifier: UInt
+  radius: Float
+  x: Float
+  y: Float
+}
+
+#valtype
+struct TouchMoveState {
+  touches: FixedArray[Touch]
+}
+
+pub fn TouchMoveBuffer::size(_ : TouchMoveBuffer) -> UInt {
+  load_u32(32)
+}
+
+#alias("_[_]")
+pub fn TouchMoveBuffer::get(_ : Self, index : Int) -> TouchMoveState {
+  ...
 }
 
 ///|
@@ -140,6 +246,7 @@ pub fn game_stop() -> Unit {
   @backend.app_stop()
 }
 
+///|
 ///｜
 /// 初始化内存布局
 fn init {

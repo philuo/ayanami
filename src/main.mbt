@@ -165,7 +165,10 @@ pub fn MouseBuffer::get(_ : Self, index : Int) -> MouseState {
 }
 
 ///|
+/// [4608, 4639] 4 * 8
 pub struct MouseMoveBuffer(Unit)
+
+pub let mouse_move_buffer : MouseMoveBuffer = MouseMoveBuffer(())
 
 ///|
 #valtype
@@ -189,7 +192,7 @@ pub fn MouseMoveBuffer::get(_ : Self, index : Int) -> MouseMoveState {
 pub struct TouchMoveBuffer(Unit)
 
 #valtype
-struct Touch {
+pub struct Touch {
   identifier: UInt
   radius: Float
   x: Float
@@ -198,16 +201,56 @@ struct Touch {
 
 #valtype
 struct TouchMoveState {
+  // touches: Array[Touch]
   touches: FixedArray[Touch]
 }
 
+pub let touch_move_buffer : TouchMoveBuffer = TouchMoveBuffer(())
+
 pub fn TouchMoveBuffer::size(_ : TouchMoveBuffer) -> UInt {
-  load_u32(32)
+  load32_u16(32)
 }
 
 #alias("_[_]")
 pub fn TouchMoveBuffer::get(_ : Self, index : Int) -> TouchMoveState {
-  ...
+  let data = load_u32(32)
+  let size = (data & 0xFFFF).reinterpret_as_int()
+
+  guard size > 0 else { return TouchMoveState::{ touches: [] } }
+
+  let count = ((data >> 16) & (0xF << index)).reinterpret_as_int();
+  let offset = 4640
+
+  let touches = FixedArray::make(count, Touch::{
+    identifier: load_u32(offset),
+    radius: load_f32(offset + 4),
+    x: load_f32(offset + 8),
+    y: load_f32(offset + 12)
+  })
+
+  for i in 1..<count {
+    let offset = offset + i * 16
+
+    touches[i] = Touch::{
+      identifier: load_u32(offset),
+      radius: load_f32(offset + 4),
+      x: load_f32(offset + 8),
+      y: load_f32(offset + 8)
+    }
+  }
+
+  // let touches = FixedArray::makei(count, i => {
+  //   let offset = 4640 + i * 16
+
+  //   Touch::{
+  //     identifier: load_u32(offset),
+  //     radius: load_f32(offset + 4),
+  //     x: load_f32(offset + 8),
+  //     y: load_f32(offset + 12)
+  //   }
+  // })
+
+  TouchMoveState::{ touches }
 }
 
 ///|
@@ -223,6 +266,7 @@ pub let last_dt : Ref[Double] = { val: 0.0 }
 
 ///|
 pub fn game_loop(dt : Double) -> Unit {
+  ignore(touch_move_buffer[0])
   ()
   // acc.val += dt - last_dt.val
   // last_dt.val = dt
@@ -238,7 +282,7 @@ pub fn game_loop(dt : Double) -> Unit {
 
 ///|
 pub fn game_start() -> Unit {
-  // last_dt.val = @backend.app_start()
+  last_dt.val = @backend.app_start()
 }
 
 ///|
@@ -250,6 +294,7 @@ pub fn game_stop() -> Unit {
 ///｜
 /// 初始化内存布局
 fn init {
-  store_u32(0, 4096) // 记录layout 4KB偏移
-  store_u64(4, 64L << 48) // 创建环形缓冲区（初始化内存）
+  store_u32(0, 4096) // 初始化layout 4KB偏移
+  store_u64(4, 64L << 48) // 初始化input:keyboard
+  // store_u32(32, 0) // 初始化input:touch
 }

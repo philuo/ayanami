@@ -80,6 +80,66 @@ export class KeyboardBuffer {
   }
 }
 
+
+export class MouseMoveBuffer {
+  /**
+   * [4608, 4639] 4 * 8
+   */
+  constructor(buffer) {
+    this.view = new DataView(buffer);
+    this.capacity = 4
+  }
+
+  get size() {
+    return this.view.getUint32(28, true);
+  }
+
+  push(x, y) {
+    const size = this.view.getUint32(28, true);
+    const index = Math.min(size, this.capacity - 1);
+    let offset = 4608 + index * 8;
+    this.view.setFloat32(offset, x, true);
+    this.view.setFloat32(offset + 4, y, true);
+
+    if (size < this.capacity) {
+      this.view.setUint32(28, size + 1, true);
+    }
+  }
+
+  pop() {
+    const size = this.view.getUint32(28, true);
+
+    if (size === 0) {
+      return null;
+    }
+
+    this.view.setUint32(28, size - 1, true);
+    const offset = 4608 + (size - 1) * 8;
+
+    return {
+      x: this.view.getFloat32(offset, true),
+      y: this.view.getFloat32(offset + 4, true)
+    };
+  }
+
+  each(fn) {
+    const size = this.view.getUint32(28, true);
+
+    for (let i = 0; i < size; ++i) {
+      const offset = 4608 + i * 8;
+
+      fn({
+         x: this.view.getFloat32(offset, true),
+        y: this.view.getFloat32(offset + 4, true)
+      });
+    }
+  }
+
+  clear() {
+    this.view.setUint32(28, 0, true);
+  }
+}
+
 export class Game {
 
 }
@@ -96,6 +156,14 @@ function game_loop(timestamp) {
   if (!is_running) return;
   exports.game_loop(timestamp);
   loop_id = requestAnimationFrame(game_loop);
+  keyboard_buffer.each(v => {
+    console.log(v)
+  });
+  mouse_move_buffer.each(v => {
+    console.log(v)
+  });
+  keyboard_buffer.clear();
+  mouse_move_buffer.clear();
 }
 
 /** wasm初始化对象 */
@@ -254,6 +322,7 @@ export const { instance: { exports } } = await WebAssembly.instantiateStreaming(
 );
 
 export const keyboard_buffer = new KeyboardBuffer(exports.memory.buffer);
+export const mouse_move_buffer = new MouseMoveBuffer(exports.memory.buffer);
 
 const KEY_MAP = {
   
@@ -266,15 +335,15 @@ window.addEventListener('keyup', (event) => {
   keyboard_buffer.push(event.timeStamp, event.keyCode, 1);
 });
 
-window.addEventListener('mousemove', () => {
-
+window.addEventListener('mousemove', event => {
+  mouse_move_buffer.push(event.clientX, event.clientY);
 });
 window.addEventListener('mousedown', event => {
-  console.log(event)
+  // console.log(event)
 });
 
 window.addEventListener('mouseup', event => {
-  console.log(event)
+  // console.log(event)
 });
 
 // ============ 自定义触点 ID 管理器 ============

@@ -26,7 +26,7 @@
   
   <!-- 调试工具 -->
   <!-- <script src="https://cdn.jsdelivr.net/npm/vconsole@3.15.1/dist/vconsole.min.js" onload="new VConsole()"></script> -->
-  <script src="https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js" onload="eruda.init()"></script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/eruda@3.4.3/eruda.min.js" onload="eruda.init()"></script> -->
   
   <style>
     /* ========== 移动端优化样式 ========== */
@@ -68,7 +68,7 @@
   <canvas id="game-canvas"></canvas>
   
   <script type="module">
-    import { keyboard_buffer, exports, touchIdAllocator, activeTouches } from './lib.js';
+    import { keyboard_buffer, mouse_move_buffer, exports, touchIdAllocator, activeTouches } from './lib.js';
 
     // ========== Canvas 初始化 ==========
     const canvas = document.getElementById('game-canvas');
@@ -131,12 +131,6 @@
       typ: 1
     };
 
-    keyboard_buffer.push(event.timestamp, event.code, event.typ);
-
-    keyboard_buffer.each(v => {
-      console.log(v)
-    })
-
     console.log(exports.memory.buffer)
     // setTimeout(exports.game_stop, 3000);
 
@@ -150,7 +144,7 @@
     const dt = performance.now();
     performance.mark('js-call-wasm-start');
     for (let i = 0; i < N; ++i) {
-      // exports.initialize(dt);
+      // exports.game_start(dt);
     }
     performance.mark('js-call-wasm-end');
     performance.mark('js-write-directly-start');

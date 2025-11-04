@@ -1,5 +1,58 @@
 # ECS架构头部信息字段设计
 
+
+同步流程 (Tick) 核心说明:
+
+JS (rAF): Atomics.add(global_logic_frame, 1)，Atomics.store(worker_barrier_count, active_worker_count)。
+
+JS: Atomics.notify(global_logic_frame) 唤醒所有等待的Workers。
+
+WASM Workers: (在 Atomics.wait 上醒来) 发现 local_frame < global_logic_frame。开始处理新帧。
+
+WASM Workers: (完成工作) Atomics.sub(worker_barrier_count, 1)。
+
+JS: (等待渲染) Atomics.wait(worker_barrier_count, 0)。当 worker_barrier_count 变为 0 时，JS知道所有Worker已完成本帧模拟。
+
+JS: Atomics.store(world_lock, 1) (锁定世界)，执行渲染/状态交换，Atomics.store(world_lock, 0) (解锁)，等待下一 rAF。
+
+0x0200: Global Control Block (B) - 计数区 (512 Bytes)
+
+常规全局计数器。若Worker可以动态增删（如创建实体），则对应字段也需 Atomics。
+
+read_state_index 和 write_state_index 的详细用法和工作流程。
+
+这两个索引是实现高性能模拟与渲染解耦的核心。
+
+1. 概念与角色定位
+这两个索引的值在 0 和 1 之间交替，分别指向 SAB 主数据区中两块独立的、用于存储实体组件数据的缓冲区（Buffer 0 和 Buffer 1）。
+
+2. 双缓冲帧循环（以两帧为例）
+假设我们从引擎初始化开始：
+
+3. 详细用法说明 (原子操作)
+A. Workers 如何使用索引
+Worker 线程会在它们的帧循环开始时，原子性地加载这两个索引：
+
+加载 read_state_index： 用于确定输入数据的地址。Worker 运行的系统（System）需要遍历并读取组件数据时，它必须知道要访问 Buffer 0 还是 Buffer 1。
+
+加载 write_state_index： 用于确定输出数据的地址。Worker 运行的系统将计算结果写入组件数据时，它必须知道要写入 Buffer 0 还是 Buffer 1。
+
+B. JS 主线程如何执行交换 (Swap)
+状态交换发生在模拟完成后、渲染开始前，必须由主线程执行，并受到 world_lock 保护，以防在交换过程中 Worker 或渲染器访问到不一致的状态。
+
+等待屏障归零： 确保所有 Worker 已完成写入。
+
+获取世界锁： Atomics.compareExchange 将 world_lock 从 0 变为 1。
+
+读取当前状态：
+
+执行交换：
+
+释放世界锁： Atomics.store 将 world_lock 设回 0。
+
+通过这种方式，read_state_index 和 write_state_index 确保了数据流的清晰、安全和高效的并行处理。
+
+
 头部不只是几个锁和计数器，它还要承担线程槽（per-worker state）、调度队列、组件/Archetype/Chunk 的元表指针、事件缓冲区指针、调试/追踪/版本信息、扩展区等功能。对于复杂引擎，头部区域往往需要 KB 级甚至几十 KB 以保证可扩展性、避免频繁迁移元数据、并消除运行时的重新分配/同步开销。
 
 下面我给你一份面向「复杂、高并发、SAB + 多 Worker」ECS 的实战化头部设计建议 —— 包含设计原则、字段说明、字节偏移表（基于 64KB 头部示例），并给出 JS/Atomics 的读写示例与最佳实践（cacheline 对齐、避免 false-sharing、版本与扩展策略 等）。你可以直接拿去当蓝图改造或扩展。

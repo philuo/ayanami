@@ -11,7 +11,7 @@
     ".mooncakes": true,
     ".moonagent": true,
     "src/target": true,
-    "node_modules": true
+    "node_modules": true,
     // "**/*.config.{ts,js}": true
   }
 }

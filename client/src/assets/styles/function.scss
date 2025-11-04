@@ -1,0 +1,14 @@
+@use 'sass:math';
+
+/**
+ * 将像素值转换为vw单位，带最大值限制
+ * @param px - 像素值
+ * @param base - 基准宽度，默认375
+ * @param max - 最大宽度，默认430
+ * @returns vw值
+ */
+@function px2vw($px, $base: 375, $max: 430) {
+  $a: math.div($px, $base) * 100;
+  $b: math.div($px * $max, $base);
+  @return min(#{$a}vw, #{$b}px);
+}

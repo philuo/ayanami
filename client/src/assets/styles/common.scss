@@ -1,0 +1,57 @@
+@use './pmd.scss';
+
+body {
+  font-size: 14px;
+  line-height: 20px;
+   /* IOS禁止微信调整字体大小 */
+	-webkit-text-size-adjust: 100% !important;
+	text-size-adjust: 100% !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+}
+
+html, body {
+  /* 禁用下拉刷新和橡皮筋效果 */
+  overscroll-behavior: none;
+  /* 禁用默认触摸操作 */
+  touch-action: none;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+#app {
+  overflow: hidden;
+}
+
+/* 隐藏滚动元素的默认滚动条  */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  color: transparent;
+}
+
+::selection {
+  background-color: rgba(234, 59, 41, .16);
+}
+
+.hover-scroller {
+  &::-webkit-scrollbar {
+    display: block;
+    width: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #f1f1f1; /* 滑块颜色 */
+    border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #ddd; /* 鼠标悬停时滑块颜色 */
+  }
+}

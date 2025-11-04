@@ -276,56 +276,82 @@ const KEYBOARD_LAYOUT = {
 interface HeaderInfo {
   /**
    * 记录头部各类数据结构的内部标量、指针(4字节对齐)
-   * 默认占用 4096 Bytes[0, 4095]
+   * 默认占用 64KB Bytes[0, 65535]
    */
   layout: {
-    /** 头部layout大小, 占用 4 Bytes[0, 3] */
-    capacity: u32;
-
-    /**
-     * 当前逻辑帧Keyboard环形队列label信息, 占用 8 Bytes[4, 11]
-     */
-    keyboard_buffer: {
-      tail: u16;
-      head: u16;
-      size: u16;
-      capacity: u16;
-    };
-    /**
-     * 上一逻辑帧Kyboard环形队列按bit对应按键是否按下, 占用 16 Bytes[12, 27]
-     */
-    last_keyboard: {
-      bitmask: [u64, u64];
-    };
-    /**
-     * 当前逻辑帧鼠标移动label信息, 占用 4 Bytes [28, 31]
-     */
-    mouse_move: {
-      /** 当前帧鼠标移动事件触发次数, 范围0~4次 */
-      size: u32;
-    };
-    /**
-     * 当前逻辑帧手指移动label信息, 占用 4 Bytes [32, 35]
-     */
-    touch_move: {
-      /** 当前帧手指移动事件触发次数, 范围0~4次 */
-      size: u16;
-      /** 
-       * 内存布局表达事件对应触点个数
-       * 0000_0000_0000_0000
+    /** 公共字段 占用 4KB Bytes */
+    global_control: {
+      /** 头部layout大小, 占用 4 Bytes[0, 3] */
+      capacity: u32;
+      /** 应用启动时间(ms) */
+      app_st: u64;
+      /** 当前帧号, 占用 8 Bytes [4, 11] */
+      frame_no: u64;
+      /**
+       * bitmask 全局bool状态
+       * 1 << 0 应用是否正在运行
        */
-      count: u16;
-    };
+      flag0: u64;
+      flag1: u64;
+      flag2: u64;
+      flag3: u64;
+      /** 支持的最多实体数量 */
+      max_entities: u32;
+      /** 支持的最多组件数量 */
+      max_components: u32;
+      /** 当前逻辑帧率Hz */
+      logic_rate: f32;
+      /** 当前渲染帧率Hz */
+      render_rate: f32;
+    }
 
-    /**
-     * 当前逻辑帧Mouse环形队列label信息, 占用 8 Bytes [36, 43]
-     */
-    mouse_buffer: {
-      tail: u16;
-      head: u16;
-      size: u16;
-      capacity: u16;
-    };
+    /** 输入区指针, 占用 */
+    inputs: {
+      /**
+       * 当前逻辑帧Keyboard环形队列label信息, 占用 8 Bytes[4, 11]
+       */
+      keyboard_buffer: {
+        tail: u16;
+        head: u16;
+        size: u16;
+        capacity: u16;
+      };
+      /**
+       * 上一逻辑帧Kyboard环形队列按bit对应按键是否按下, 占用 16 Bytes[12, 27]
+       */
+      last_keyboard: {
+        bitmask: [u64, u64];
+      };
+      /**
+       * 当前逻辑帧鼠标移动label信息, 占用 4 Bytes [28, 31]
+       */
+      mouse_move: {
+        /** 当前帧鼠标移动事件触发次数, 范围0~4次 */
+        size: u32;
+      };
+      /**
+       * 当前逻辑帧手指移动label信息, 占用 4 Bytes [32, 35]
+       */
+      touch_move: {
+        /** 当前帧手指移动事件触发次数, 范围0~4次 */
+        size: u16;
+        /** 
+         * 内存布局表达事件对应触点个数
+         * 0000_0000_0000_0000
+         */
+        count: u16;
+      };
+  
+      /**
+       * 当前逻辑帧Mouse环形队列label信息, 占用 8 Bytes [36, 43]
+       */
+      mouse_buffer: {
+        tail: u16;
+        head: u16;
+        size: u16;
+        capacity: u16;
+      };
+    }
   };
 
   // 当前逻辑帧Keyboard环形队列；最大64项 占用 512 Bytes [4096, 4607]

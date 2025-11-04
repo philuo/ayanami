@@ -1,0 +1,404 @@
+/* 布局 */
+.o-flex {
+  display: flex;
+  flex-direction: row;
+}
+
+.o-flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 外边距 2~36 */
+@for $i from 2 to 37 {
+  .o-mt-#{$i} {
+    margin-top: #{$i}px;
+  }
+  .o-mb-#{$i} {
+    margin-bottom: #{$i}px;
+  }
+  .o-ml-#{$i} {
+    margin-left: #{$i}px;
+  }
+  .o-mr-#{$i} {
+    margin-right: #{$i}px;
+  }
+}
+
+/* 内边距 2~36 */
+@for $i from 2 to 37 {
+  .o-pt-#{$i} {
+    padding-top: #{$i}px;
+  }
+  .o-pb-#{$i} {
+    padding-bottom: #{$i}px;
+  }
+  .o-pl-#{$i} {
+    padding-left: #{$i}px;
+  }
+  .o-pr-#{$i} {
+    padding-right: #{$i}px;
+  }
+}
+
+.o-cshr {
+  flex-shrink: 0;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.o-shr {
+  flex-shrink: 0;
+}
+
+.o-ctr {
+  align-items: center;
+}
+
+.o-jyc {
+  justify-content: center;
+}
+
+.o-w10 {
+  width: 100%;
+}
+
+.o-wfc {
+  width: fit-content;
+}
+
+.o-h10 {
+  height: 100%;
+}
+.o-hfc {
+  height: fit-content;
+}
+
+/* 位置类型 */
+.o-pos-0 {
+  position: static;
+}
+
+.o-pos-1 {
+  position: fixed;
+}
+
+.o-pos-2 {
+  position: relative;
+}
+
+.o-pos-3 {
+  position: absolute;
+}
+
+.o-pos-4 {
+  position: sticky;
+}
+
+.o-cvr-1 {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+/* 通用全局类 */
+
+/* 字体对齐 */
+.o-t-ctr {
+  text-align: center;
+}
+
+.o-t-rht {
+  text-align: right;
+}
+
+.o-t-lft {
+  text-align: left;
+}
+
+/* 字重 */
+.o-fw-1 {
+  font-weight: 400;
+}
+
+.o-fw-2 {
+  font-weight: 400;
+  -webkit-text-stroke: .1px;
+}
+
+.o-fw-3 {
+  font-weight: 400;
+  -webkit-text-stroke: .2px;
+}
+
+.o-fw-4 {
+  font-weight: 400;
+  -webkit-text-stroke: .3px;
+}
+
+.o-fw-5 {
+  font-weight: 500;
+}
+
+.o-fw-6 {
+  font-weight: 600;
+}
+
+.o-fw-7 {
+  font-weight: 700;
+}
+
+
+/* 字号 */
+.o-f0 {
+  font-size: 12px;
+}
+
+.o-f1 {
+  font-size: 13px;
+}
+
+.o-f2 {
+  font-size: 14px;
+}
+
+.o-f3 {
+  font-size: 15px;
+}
+
+.o-f4 {
+  font-size: 16px;
+}
+
+.o-f5 {
+  font-size: 17px;
+}
+
+.o-f6 {
+  font-size: 18px;
+}
+
+/* 文案截断 */
+.o-clamp-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@for $i from 2 to 5 {
+  .o-clamp-#{$i} {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: $i;
+    line-clamp: $i;
+    -webkit-box-orient: vertical;
+  }
+}
+
+/* 分割线 */
+.o-line-top::after,
+.o-line-bottom::after {
+  height: 1px;
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform: scaleY(.5);
+  background: #E6E6E6;
+}
+
+.o-line-top::after {
+  top: 0;
+}
+
+.o-line-bottom::after {
+  bottom: 0;
+}
+
+/* Radius */
+.o-round {
+  border-radius: 50%;
+}
+
+.o-r180 {
+  transform: rotate(180deg);
+}
+
+/* 表现形式 */
+.o-flx-1 {
+  flex: 1;
+}
+
+.o-ws-pr {
+  white-space: pre-wrap;
+}
+
+.o-ws-n {
+  white-space: nowrap;
+}
+
+.o-hide {
+  overflow: hidden;
+}
+
+.o-bbox {
+  box-sizing: border-box;
+}
+
+.o-cbox {
+  box-sizing: content-box;
+}
+
+.o-slt {
+  user-select: text;
+}
+.o-sln {
+  user-select: none;
+}
+
+.o-ptr {
+  cursor: pointer;
+}
+.o-nta {
+  cursor: not-allowed;
+}
+/* 字体颜色 */
+.o-black {
+  color: #0D0D0D;
+}
+.o-black-1 {
+  color: #333;
+}
+.o-blue {
+  color: #0076FF;
+}
+.o-gray {
+  color: #666;
+}
+.o-light-gray {
+  color: #888;
+}
+.o-t-ph {
+  color: #999;
+}
+.o-white {
+  color: #FFF;
+}
+
+/* 背景颜色 */
+.o-bg-white {
+  background-color: #FFF;
+}
+.o-bg-img {
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* 自定义按钮颜色 */
+.o-btn-active {
+  &::before {
+    content: '';
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, .1);
+    opacity: .7;
+  }
+}
+
+
+
+/* Transition builtin */
+// 渐显
+.fade-in-enter-active,
+.fade-in-exit-active {
+  transition: all .25s cubic-bezier(0, 0, .2, 1);
+}
+.fade-in-enter,
+.fade-in-exit-to {
+  opacity: 0;
+}
+.fade-in-enter-to,
+.fade-in-exit {
+  opacity: 1;
+}
+
+// 向下滑动 + 渐显
+.fade-in-down-enter-active,
+.fade-in-down-exit-active {
+  transition: all .25s cubic-bezier(0, 0, .2, 1);
+}
+.fade-in-down-enter,
+.fade-in-down-exit-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+.fade-in-down-enter-to,
+.fade-in-down-exit {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+// 缩放 + 渐显
+.fade-in-scale-up-enter-active {
+  transition:
+    opacity .25s cubic-bezier(0, 0, .2, 1),
+    transform .25s cubic-bezier(0, 0, .2, 1);
+}
+.fade-in-scale-up-exit-active {
+  transition:
+    opacity .25s cubic-bezier(.4, 0, 1, 1),
+    transform .25s cubic-bezier(.4, 0, 1, 1);
+}
+.fade-in-scale-up-enter,
+.fade-in-scale-up-exit-to {
+  opacity: 0;
+  transform: scale(.5);
+}
+.fade-in-scale-up-enter-to,
+.fade-in-scale-up-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+// 左滑入
+.slide-left-enter-active {
+  transition: transform .25s cubic-bezier(0, 0, .2, 1);
+}
+.slide-left-exit-active {
+  transition: transform .25s cubic-bezier(.4, 0, 1, 1);
+}
+.slide-left-enter,
+.slide-left-exit-to {
+  transform: translateX(-100%);
+}
+.slide-left-enter-to,
+.slide-left-exit {
+  transform: translateX(0);
+}
+
+// 左滑入 + 渐显
+.fade-in-left-enter-active {
+  transition:
+    opacity .25s cubic-bezier(0, 0, .2, 1),
+    transform .25s cubic-bezier(0, 0, .2, 1);
+}
+.fade-in-left-exit-active {
+  transition:
+    opacity .25s cubic-bezier(.4, 0, 1, 1),
+    transform .25s cubic-bezier(.4, 0, 1, 1);
+}
+.fade-in-left-enter,
+.fade-in-left-exit-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+.fade-in-left-enter-to,
+.fade-in-left-exit {
+  opacity: 1;
+  transform: translateX(0);
+}

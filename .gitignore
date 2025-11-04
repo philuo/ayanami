@@ -3,6 +3,7 @@ target/
 .mooncakes/
 .moonagent/
 node_modules/
+certs
 
 package-lock.json
 bun.lock

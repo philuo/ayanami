@@ -8,6 +8,8 @@ export default {
 
   game: {
     /** 逻辑帧步长(ms) */
-    logic_frame_step: 16
+    logic_frame_step: 16,
+    /** 逻辑帧最大累计10帧 => 160(ms) */
+    max_acc: 160
   }
 };

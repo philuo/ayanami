@@ -21,6 +21,9 @@ function game_loop(timestamp) {
   last_dt = timestamp;
   let need_logic_frame = acc >= LOGIC_STEP;
 
+  // 限制最大累计逻辑帧数
+  if (configs.game.max_acc < acc) acc = configs.game.max_acc;
+
   // 逻辑帧开始，停止捕获
   if (need_logic_frame) {
     inputs.discard();

@@ -42,119 +42,120 @@ interface GlobalControl {
    */
   flags: u64;
 
-  /** offset: 0x0048 双缓冲状态：渲染器/读取器使用的索引 (0 or 1) */
-  read_state_index: u32;
-  /** offset: 0x004C 双缓冲状态：模拟器/写入器使用的索引 (0 or 1) */
-  write_state_index: u32;
+  /**
+   * offset: 0x004C, length: 4 Bytes 
+   * 当前主线程正在写的InputEventQueue, 此时WASM读另一个InputEventQueue
+   * 编号0或1, 默认首次使用0
+   */
+  input_event_queue_no: u32;
 
-  /** TODO: 输入区指针, 需使用双缓冲交换不中断接收输入事件 */
-  inputs: {
-    /**
-     * 当前逻辑帧Keyboard环形队列label信息, 占用 8 Bytes[4, 11]
-     */
-    keyboard_buffer: {
-      tail: u16;
-      head: u16;
-      size: u16;
-      capacity: u16;
-    };
-    /**
-     * 上一逻辑帧Kyboard环形队列按bit对应按键是否按下, 占用 16 Bytes[12, 27]
-     */
-    last_keyboard: {
-      bitmask: [u64, u64];
-    };
-    /**
-     * 当前逻辑帧鼠标移动label信息, 占用 4 Bytes [28, 31]
-     */
-    mouse_move: {
-      /** 当前帧鼠标移动事件触发次数, 范围0~4次 */
-      size: u32;
-    };
-    /**
-     * 当前逻辑帧手指移动label信息, 占用 4 Bytes [32, 35]
-     */
-    touch_move: {
-      /** 当前帧手指移动事件触发次数, 范围0~4次 */
-      size: u16;
-      /** 
-       * 内存布局表达事件对应触点个数
-       * 0000_0000_0000_0000
-       */
-      count: u16;
-    };
 
-    /**
-     * 当前逻辑帧Mouse环形队列label信息, 占用 8 Bytes [36, 43]
-     */
-    mouse_buffer: {
-      tail: u16;
-      head: u16;
-      size: u16;
-      capacity: u16;
-    };
-  };
 
-  // reserved 944 Bytes
+  // reserved 0x0050 ~ 0x03FF 944 Bytes
 }
 
-/**
- * offset: 0x2000, length: 8192
- * 数据表元数据
+/** 
+ * offset: 0x0400, length: 8192 Bytes
+ * - 线程插槽 (suggest 64 slots layout)
+ * - (32 slots & slot per 256 Bytes) 
+ * - (64 slots & slot per 128 Bytes) 
+ * - (128 slots & slot per 64 Bytes) 
+ * - (256 slots & slot per 32 Bytes) 
  */
-interface TableMeta {}
+interface ThreadSlots { }
+
+
+/**
+ * offset: 0x2400, length: 8192
+ * 数据表元数据, 存放着所有“数据指针”
+ */
+interface TableMeta { }
+
+
+interface RingBufferMeta<T = u16> {
+  tail: T;
+  head: T;
+  size: T;
+  capacity: T;
+}
 
 /** 
- * offset: 0x4000, length: 16384
- * 事件队列元数据
+ * offset: 0x4400, length: 16384 \
+ * 事件容器数据, 存放着所有“容器指针”，DataArea中有与之对应实际数据
  */
-interface EventQueueMeta {
-  // 当前逻辑帧Keyboard环形队列；最大64项 占用 512 Bytes [4096, 4607]
-  keyboard_buffer: Array<{ timestamp: f32; code: u16; typ: u16; }>;
-
-  /** 
-   * 当前逻辑帧鼠标移动事件；最大4项, 占用 32 Bytes [4608, 4639]
+interface EventMeta {
+  /**
+   * offset: 0x4400, length: 8 Bytes
+   * Keyboard按键按下事件环形队列meta信息, 占用 8 Bytes
    */
-  mouse_move_buffer: Array<{ x: f32, y: f32 }>;
-
-  // 当前逻辑帧手指移动事件；最大4项, 占用 256 Bytes [4640, 4895]
-  touch_move_buffer: Array<{
-    /** 至多支持4个触点, 每个触点占用 16 Bytes, 共占用 64 Bytes */
-    touches: Array<{
-      /** 触摸点唯一标识 */
-      identifier: u32;
-      /** 触点半径 */
-      radius: f32
-      /** 水平方向位置 */
-      x: f32;
-      /** 垂直方向位置 */
-      y: f32;
-    }>
-  }>
+  keydown_buffer: RingBufferMeta;
+  /**
+   * offset: 0x4408, length: 8 Bytes
+   * Keyboard按键弹起事件环形队列meta信息, 占用 8 Bytes
+   */
+  keyup_buffer: RingBufferMeta;
 
   /**
-   * 当前逻辑帧鼠标点击事件；最大16项 占用 128 Bytes [4896, 5023]
+   * offset: 0x4410, length: 8 Bytes
+   * Mouse按键按下事件环形队列meta信息, 占用 8 Bytes
    */
-  mouse_buffer: Array<{ timestamp: f32, buttons: u32 }>
+  mousedown_buffer: RingBufferMeta;
+  /**
+   * offset: 0x4418, length: 8 Bytes
+   * Mouse按键弹起事件环形队列meta信息, 占用 8 Bytes
+   */
+  mouseup_buffer: RingBufferMeta;
+
+  /**
+   * offset: 0x4420, length: 8 Bytes
+   * Mouse移动label信息, 占用 4 Bytes
+   */
+  mousemove_buffer: RingBufferMeta;
+
+  /**
+   * offset: 0x4428, length: 8 Bytes
+   * Touch开始事件环形队列meta信息, 占用 8 Bytes
+   */
+  touchstart_buffer: RingBufferMeta;
+
+  /**
+   * offset: 0x4430, length: 8 Bytes
+   * 注意: 超过触点个数后，touchcancel事件在ios safari上稳定触发强制移除所有触点 \
+   * 当touchcancel发生时，主线程写入全部当前触点的end事件
+   */
+  touchend_buffer: RingBufferMeta;
+
+  /**
+   * offset: 0x4438, length: 8 Bytes
+   * Touch移动label信息, 占用 8 Bytes
+   */
+  touchmove_buffer: RingBufferMeta;
+
+  /**
+   * offset: 0x4440, length: 8 Bytes
+   * Wheel滚动事件环形队列meta信息, 占用 8 Bytes
+   */
+  wheel_buffer: RingBufferMeta;
+
+  // /**
+  //  * TODO: 上一逻辑帧Kyboard环形队列按bit对应按键是否按下, 改为内置组件实现 占用 16 Bytes
+  //  */
+  // last_keyboard: {
+  //   bitmask: [u64, u64];
+  // };
 }
 
-/** 
- * offset: 0x4000, length: 7168 Bytes
- * 线程插槽(28slots 每slot 256 Bytes)
- */
-interface ThreadSlots {}
-
 /**
- * offset: 0x8000, length: 8192 Bytes
+ * offset: 0x8400, length: 7168 Bytes
  * 性能遥测
  */
-interface Telemetry {}
+interface Telemetry { }
 
 /**
  * offset: 0xA000, length: 24576 Bytes
  * 未来扩展区
  */
-interface Extension {}
+interface Extension { }
 
 /**
  * offest: 0x0000, length: 64KB
@@ -162,15 +163,15 @@ interface Extension {}
 interface HeaderInfo {
   /** 全局控制 */
   global_control: GlobalControl;
-  
+
   /** 线程插槽 */
   thread_slots: ThreadSlots;
 
   /** 数据表元数据 */
   table_meta: TableMeta;
 
-  /** 事件队列元数据 */
-  event_queue_meta: EventQueueMeta;
+  /** 事件容器元数据 */
+  event_meta: EventMeta;
 
   /** 性能遥测 */
   telemetry: Telemetry;
@@ -180,16 +181,132 @@ interface HeaderInfo {
 }
 
 
-/** Unsigned16 bits */
+/** 
+ * length: 512 Bytes
+ * 输入区指针, 需使用双缓冲交换不中断接收输入事件
+ */
+interface InputEventQueue {
+  /** 8 Bytes */
+  keydown_buffer: Array<{ timestamp: f32; code: u16; typ: u16; }>;
+  /** 8 Bytes */
+  keyup_buffer: Array<{ timestamp: f32; code: u16; typ: u16; }>;
+  /** 16 Bytes */
+  mousedown_buffer: Array<{
+    timestamp: f32;
+    button: u32;
+    buttons: u16;
+    modifiers: u16;
+    _padding: u32;
+  }>;
+  /** 16 Bytes */
+  mouseup_buffer: Array<{
+    timestamp: f32;
+    button: u32;
+    buttons: u16;
+    modifiers: u16;
+    _padding: u32;
+  }>;
+  /** 32 Bytes */
+  mousemove_buffer: Array<{
+    timestamp: f32;
+    x: f32;   // clientX
+    y: f32;   // clientY
+    dx: i32;  // movementX
+    dy: i32;  // movementY
+    buttons: u16; // 鼠标按钮状态
+    modifiers: u16; // Shift/Ctrl/Command/Alt 状态
+    _padding: u64;
+  }>;
+
+  /** 32 Bytes */
+  touchstart_buffer: Array<{
+    timestamp: f32;
+    identifier: u32;  // 0~n 手指标识符
+    x: f32;   // clientX
+    y: f32;   // clientY
+    dx: i32;  // movementX
+    dy: i32;  // movementY
+    buttons: u16; // 鼠标按钮状态
+    modifiers: u16; // Shift/Ctrl/Command/Alt 状态
+    _padding: u32;
+  }>;
+
+  /** 32 Bytes */
+  touchend_buffer: Array<{
+    timestamp: f32;
+    identifier: u32;  // 0~n 手指标识符
+    x: f32;   // clientX
+    y: f32;   // clientY
+    dx: i32;  // movementX
+    dy: i32;  // movementY
+    buttons: u16; // 鼠标按钮状态
+    modifiers: u16; // Shift/Ctrl/Command/Alt 状态
+    _padding: u32;
+  }>;
+
+  /** 32 Bytes */
+  touchmove_buffer: Array<{
+    timestamp: f32;
+    identifier: u32;  // 0~n 手指标识符
+    x: f32;   // clientX
+    y: f32;   // clientY
+    dx: i32;  // movementX
+    dy: i32;  // movementY
+    buttons: u16; // 鼠标按钮状态
+    modifiers: u16; // Shift/Ctrl/Command/Alt 状态
+    _padding: u32;
+  }>;
+
+  /** 32 Bytes */
+  wheel_buffer: Array<{
+    timestamp: f32;
+    identifier: u32;  // 0~n 手指标识符
+    x: f32;   // clientX
+    y: f32;   // clientY
+    dx: i32;  // deltaX
+    dy: i32;  // deltaY
+    buttons: u16; // 鼠标按钮状态
+    modifiers: u16; // Shift/Ctrl/Command/Alt 状态
+    _padding: u32;
+  }>;
+}
+
+/** 
+ * offset: 0x10000, length: 1MB+
+ */
+interface DataArea {
+  /**
+   * offset: 0x10000, length: 512 Bytes
+   * 输入事件队列0, 默认首次使用此队列, 取决于
+   */
+  input_event_queue_0: InputEventQueue;
+  /**
+   * offset: 0x10200, length: 512 Bytes
+   * 输入事件队列1
+   */
+  input_event_queue_1: InputEventQueue;
+}
+
+
+/** Byte */
+type u8 = number;
+
+/** UInt16 */
 type u16 = number;
 
-/** Usigned32 bits */
+/** Int16 */
+type i16 = number;
+
+/** UInt */
 type u32 = number;
 
-/** Signed32 bits */
+/** Int */
 type i32 = number;
 
-/** Usigned64 bits */
+/** Int64 */
+type i64 = number;
+
+/** UInt64 */
 type u64 = number;
 
 /** Float */

@@ -294,7 +294,7 @@ pub fn game_stop() -> Unit {
 ///｜
 /// 初始化内存布局
 fn init {
-  store_u32(0, 4096) // 初始化layout 4KB偏移
-  store_u64(4, 64L << 48) // 初始化input:keyboard
-  // store_u32(32, 0) // 初始化input:touch
+  // store_u32(0, 4096) // 初始化layout 4KB偏移
+  // store_u64(4, 64L << 48) // 初始化input:keyboard
+  // // store_u32(32, 0) // 初始化input:touch
 }
